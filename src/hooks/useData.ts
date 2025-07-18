@@ -25,22 +25,37 @@ export function useEntity<T>(tableName: string) {
   const { user } = useAuth()
 
   const fetchData = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setLoading(false)
+      setData([])
+      return
+    }
     
     try {
       setLoading(true)
+      setError(null)
+      
+      console.log(`Fetching data from ${tableName} for user:`, user.id)
+      
       const { data: result, error: fetchError } = await supabase
         .from(tableName)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
-      if (fetchError) throw fetchError
+      if (fetchError) {
+        console.error(`Error fetching ${tableName}:`, fetchError)
+        throw fetchError
+      }
       
+      console.log(`Successfully fetched ${result?.length || 0} records from ${tableName}`)
       setData(result || [])
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      console.error(`Failed to fetch ${tableName}:`, errorMessage)
+      setError(errorMessage)
+      setData([])
     } finally {
       setLoading(false)
     }
@@ -50,25 +65,34 @@ export function useEntity<T>(tableName: string) {
     if (!user) throw new Error('User not authenticated')
     
     try {
+      console.log(`Creating new item in ${tableName}:`, item)
+      
+      const itemWithUser = {
+        ...item,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      
       const { data: newItem, error: createError } = await supabase
         .from(tableName)
-        .insert({
-          ...item,
-          user_id: user.id
-        })
+        .insert(itemWithUser)
         .select()
         .single()
       
       if (createError) {
-        console.error('Create error:', createError)
+        console.error(`Create error in ${tableName}:`, createError)
         throw createError
       }
       
+      console.log(`Successfully created item in ${tableName}:`, newItem)
       setData(prev => [newItem, ...prev])
+      setError(null)
       return newItem
     } catch (err) {
-      console.error('Failed to create item:', err)
-      setError(err instanceof Error ? err.message : 'Failed to create item')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create item'
+      console.error(`Failed to create item in ${tableName}:`, errorMessage)
+      setError(errorMessage)
       throw err
     }
   }

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
+import { SmartSearch } from '@/components/ui/smart-search'
 import { 
   Save, 
   AlertCircle, 
@@ -39,6 +40,9 @@ interface FormErrors {
 
 interface FormData {
   invention_id: string
+  id_prefix: 'INV' | 'TEC'
+  id_year: string
+  id_number: string
   title: string
   description: string
   inventors: string[]
@@ -76,8 +80,24 @@ const READINESS_LEVELS = [
 
 export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }: DisclosureFormProps) {
   const { data: inventors } = useInventors()
+  
+  // Parse existing invention_id if editing
+  const parseInventionId = (id: string) => {
+    if (!id) return { prefix: 'INV' as const, year: new Date().getFullYear().toString(), number: '' }
+    const match = id.match(/^(INV|TEC)-(\d{4})-(\d{3,4})$/)
+    if (match) {
+      return { prefix: match[1] as 'INV' | 'TEC', year: match[2], number: match[3] }
+    }
+    return { prefix: 'INV' as const, year: new Date().getFullYear().toString(), number: '' }
+  }
+  
+  const parsedId = parseInventionId(disclosure?.invention_id || '')
+  
   const [formData, setFormData] = useState<FormData>({
     invention_id: disclosure?.invention_id || '',
+    id_prefix: parsedId.prefix,
+    id_year: parsedId.year,
+    id_number: parsedId.number,
     title: disclosure?.title || '',
     description: disclosure?.description || '',
     inventors: disclosure?.inventors || [],
@@ -95,10 +115,31 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
   })
   
   const [errors, setErrors] = useState<FormErrors>({})
-  const [newInventor, setNewInventor] = useState('')
-  const [newTag, setNewTag] = useState('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  
+  // Sample data for smart search suggestions
+  const sampleInventors = [
+    'Dr. Jane Smith', 'Dr. John Doe', 'Prof. Sarah Johnson', 'Dr. Michael Brown',
+    'Prof. Emily Davis', 'Dr. David Wilson', 'Prof. Lisa Anderson', 'Dr. Robert Taylor',
+    'Prof. Jennifer Martinez', 'Dr. Christopher Lee', 'Prof. Amanda White', 'Dr. Kevin Garcia'
+  ]
+  
+  const sampleTags = [
+    'Artificial Intelligence', 'Machine Learning', 'Deep Learning', 'Computer Vision',
+    'Natural Language Processing', 'Robotics', 'IoT', 'Blockchain', 'Cybersecurity',
+    'Healthcare', 'Biotechnology', 'Medical Devices', 'Pharmaceuticals', 'Diagnostics',
+    'Energy', 'Renewable Energy', 'Solar', 'Wind Power', 'Battery Technology',
+    'Materials Science', 'Nanotechnology', 'Advanced Materials', 'Composites',
+    'Software', 'Mobile App', 'Web Platform', 'Database', 'Cloud Computing',
+    'Automotive', 'Aerospace', 'Manufacturing', 'Automation', 'Sensors'
+  ]
+  
+  // Combine existing inventors with sample data for suggestions
+  const inventorSuggestions = [
+    ...sampleInventors,
+    ...inventors.map(inv => `${inv.first_name} ${inv.last_name}`).filter(Boolean)
+  ]
 
   // Auto-save functionality
   useEffect(() => {
@@ -113,17 +154,35 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
     return () => clearTimeout(timeoutId)
   }, [formData]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Update invention_id when components change
+  useEffect(() => {
+    if (formData.id_prefix && formData.id_year && formData.id_number) {
+      const newId = `${formData.id_prefix}-${formData.id_year}-${formData.id_number.padStart(3, '0')}`
+      if (newId !== formData.invention_id) {
+        setFormData(prev => ({ ...prev, invention_id: newId }))
+      }
+    }
+  }, [formData.id_prefix, formData.id_year, formData.id_number, formData.invention_id])
+
   const validateForm = (silent = false): boolean => {
     const newErrors: FormErrors = {}
     const newValidationErrors: string[] = []
 
-    // Required field validation
-    if (!formData.invention_id.trim()) {
-      newErrors.invention_id = 'Invention ID is required'
-      newValidationErrors.push('Invention ID is required')
-    } else if (!/^INV-\d{4}-\d{3,4}$/.test(formData.invention_id.trim())) {
-      newErrors.invention_id = 'Invention ID must follow format: INV-YYYY-XXX (e.g., INV-2025-001)'
-      newValidationErrors.push('Invention ID must follow format: INV-YYYY-XXX')
+    // ID validation
+    if (!formData.id_year.trim()) {
+      newErrors.id_year = 'Year is required'
+      newValidationErrors.push('Year is required')
+    } else if (!/^\d{4}$/.test(formData.id_year.trim())) {
+      newErrors.id_year = 'Year must be 4 digits (e.g., 2025)'
+      newValidationErrors.push('Year must be 4 digits')
+    }
+
+    if (!formData.id_number.trim()) {
+      newErrors.id_number = 'Number is required'
+      newValidationErrors.push('ID number is required')
+    } else if (!/^\d{1,4}$/.test(formData.id_number.trim())) {
+      newErrors.id_number = 'Number must be 1-4 digits (e.g., 001)'
+      newValidationErrors.push('ID number must be 1-4 digits')
     }
 
     if (!formData.title.trim()) {
@@ -226,27 +285,7 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
     }
   }
 
-  const addInventor = () => {
-    if (newInventor.trim() && !formData.inventors.includes(newInventor.trim())) {
-      handleInputChange('inventors', [...formData.inventors, newInventor.trim()])
-      setNewInventor('')
-    }
-  }
 
-  const removeInventor = (index: number) => {
-    handleInputChange('inventors', formData.inventors.filter((_, i) => i !== index))
-  }
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      handleInputChange('tags', [...formData.tags, newTag.trim()])
-      setNewTag('')
-    }
-  }
-
-  const removeTag = (index: number) => {
-    handleInputChange('tags', formData.tags.filter((_, i) => i !== index))
-  }
 
   // Calculate IRL based on KTH framework - weighted average of component readiness levels
   const calculateIRL = () => {
@@ -335,25 +374,61 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="invention_id" className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 Invention ID <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="invention_id"
-                value={formData.invention_id}
-                onChange={(e) => handleInputChange('invention_id', e.target.value)}
-                placeholder="INV-2025-001"
-                className={errors.invention_id ? 'border-red-500 focus:border-red-500' : ''}
-              />
-              {errors.invention_id && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.invention_id}
+              <div className="flex gap-2">
+                <Select 
+                  value={formData.id_prefix} 
+                  onValueChange={(value) => handleInputChange('id_prefix', value)}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="INV">INV</SelectItem>
+                    <SelectItem value="TEC">TEC</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="flex items-center text-gray-500">-</span>
+                <Input
+                  value={formData.id_year}
+                  onChange={(e) => handleInputChange('id_year', e.target.value)}
+                  placeholder="2025"
+                  className={`w-20 ${errors.id_year ? 'border-red-500' : ''}`}
+                  maxLength={4}
+                />
+                <span className="flex items-center text-gray-500">-</span>
+                <Input
+                  value={formData.id_number}
+                  onChange={(e) => handleInputChange('id_number', e.target.value)}
+                  placeholder="001"
+                  className={`w-20 ${errors.id_number ? 'border-red-500' : ''}`}
+                  maxLength={4}
+                />
+              </div>
+              <div className="text-sm">
+                <p className="font-medium text-gray-700">Generated ID: <span className="text-blue-600">{formData.invention_id || 'INV-YYYY-XXX'}</span></p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Choose INV for inventions or TEC for technology disclosures
                 </p>
+              </div>
+              {(errors.id_year || errors.id_number) && (
+                <div className="space-y-1">
+                  {errors.id_year && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.id_year}
+                    </p>
+                  )}
+                  {errors.id_number && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.id_number}
+                    </p>
+                  )}
+                </div>
               )}
-              <p className="text-xs text-gray-500">
-                Format: INV-YYYY-XXX (e.g., INV-2025-001)
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -485,39 +560,17 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
             Inventors
           </CardTitle>
           <CardDescription>
-            Add all inventors and contributors to this disclosure
+            Add all inventors and contributors to this disclosure. Start typing to see suggestions or add new names.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={newInventor}
-              onChange={(e) => setNewInventor(e.target.value)}
-              placeholder="Enter inventor name"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addInventor())}
-            />
-            <Button type="button" onClick={addInventor} variant="outline">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {formData.inventors.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {formData.inventors.map((inventor, index) => (
-                <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  <Users className="h-3 w-3 mr-1" />
-                  {inventor}
-                  <button
-                    type="button"
-                    onClick={() => removeInventor(index)}
-                    className="ml-2 hover:text-red-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
+          <SmartSearch
+            value={formData.inventors}
+            onChange={(value) => handleInputChange('inventors', value)}
+            suggestions={inventorSuggestions}
+            placeholder="Search for inventors or add new ones..."
+            allowCustom={true}
+          />
           
           {errors.inventors && (
             <p className="text-sm text-red-600 flex items-center gap-1">
@@ -536,39 +589,17 @@ export function DisclosureForm({ disclosure, onSave, onCancel, loading = false }
             Tags & Keywords
           </CardTitle>
           <CardDescription>
-            Add relevant tags to help categorize and search for this disclosure
+            Add relevant tags to help categorize and search for this disclosure. Start typing to see suggestions.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Enter tag (e.g., AI, Machine Learning, Healthcare)"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-            />
-            <Button type="button" onClick={addTag} variant="outline">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {formData.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(index)}
-                    className="ml-2 hover:text-red-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
+          <SmartSearch
+            value={formData.tags}
+            onChange={(value) => handleInputChange('tags', value)}
+            suggestions={sampleTags}
+            placeholder="Search for tags or add new ones (e.g., AI, Machine Learning, Healthcare)..."
+            allowCustom={true}
+          />
         </CardContent>
       </Card>
 
