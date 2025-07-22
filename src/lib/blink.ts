@@ -193,13 +193,75 @@ export type Filing = {
   linked_disclosure_ids: string[]
   linked_project_id?: string
   lead_inventor_id?: string
-  assignment_to_university: boolean
+  assignment_to_university?: string
   assignment_date?: string
-  assignment_status: 'Yes' | 'No' | 'Pending'
+  assignment_status?: 'Yes' | 'No' | 'Pending'
   notes?: string
   created_at: string
   updated_at: string
   user_id: string
+}
+
+export type FilingRelationship = {
+  id: string
+  parent_filing_id: string
+  child_filing_id: string
+  relationship_type: string
+  priority_claim: boolean
+  created_at: string
+}
+
+export type FilingAnnuity = {
+  id: string
+  filing_id: string
+  jurisdiction: string
+  due_date: string
+  payment_frequency: string
+  payment_status: string
+  payment_date?: string
+  amount?: number
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export type FilingOfficeAction = {
+  id: string
+  filing_id: string
+  action_type: string
+  date_received: string
+  response_deadline: string
+  response_filed_date?: string
+  status: string
+  assigned_user_id?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export type FilingChecklist = {
+  id: string
+  filing_id: string
+  task_name: string
+  due_date?: string
+  reminder_days?: number
+  assigned_user_id?: string
+  status: string
+  tags?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export type FilingTimeline = {
+  id: string
+  filing_id: string
+  event_type: string
+  event_description: string
+  old_value?: string
+  new_value?: string
+  user_id?: string
+  created_at: string
+  timestamp: string
 }
 
 export type Alert = {

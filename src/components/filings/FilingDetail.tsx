@@ -19,31 +19,7 @@ import { FilingChecklistTab } from './tabs/FilingChecklistTab';
 import { FilingLinkedItemsTab } from './tabs/FilingLinkedItemsTab';
 import { FilingSystemTimelineTab } from './tabs/FilingSystemTimelineTab';
 
-interface Filing {
-  id: string;
-  filing_title: string;
-  filing_type: string;
-  jurisdictions: string[];
-  filing_date: string;
-  priority_date?: string;
-  application_number?: string;
-  publication_date?: string;
-  grant_date?: string;
-  expiry_date?: string;
-  grant_number?: string;
-  patent_classifications: string[];
-  filing_status: string;
-  linked_disclosure_ids: string[];
-  linked_project_id?: string;
-  lead_inventor_id?: string;
-  assignment_to_university: boolean;
-  assignment_date?: string;
-  assignment_status: 'Yes' | 'No' | 'Pending';
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { Filing } from '@/lib/blink';
 
 export function FilingDetail() {
   const { id } = useParams<{ id: string }>();

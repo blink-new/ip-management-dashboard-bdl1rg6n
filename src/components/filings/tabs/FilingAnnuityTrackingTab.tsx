@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Plus, Edit, Trash2, Calendar, DollarSign } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFilings } from '@/hooks/useData';
+import { FilingAnnuity } from '@/lib/blink';
 
 const PAYMENT_FREQUENCIES = [
   'Annual',
@@ -37,16 +38,7 @@ const JURISDICTIONS = [
   { code: 'AU', name: 'Australia', flag: 'AU' }
 ];
 
-interface AnnuityEntry {
-  id?: string;
-  jurisdiction: string;
-  due_date: string;
-  payment_frequency: string;
-  payment_status: string;
-  payment_date?: string;
-  amount?: number;
-  notes?: string;
-}
+type AnnuityEntry = FilingAnnuity;
 
 interface FilingAnnuityTrackingTabProps {
   filing: any;
@@ -60,7 +52,7 @@ export function FilingAnnuityTrackingTab({ filing }: FilingAnnuityTrackingTabPro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [newAnnuity, setNewAnnuity] = useState<AnnuityEntry>({
+  const [newAnnuity, setNewAnnuity] = useState<Partial<AnnuityEntry>>({
     jurisdiction: '',
     due_date: '',
     payment_frequency: 'Annual',

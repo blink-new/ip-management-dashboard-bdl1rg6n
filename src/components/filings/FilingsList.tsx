@@ -11,18 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFilings } from '@/hooks/useData';
 import { useAuth } from '@/hooks/useAuth';
 
-interface Filing {
-  id: string;
-  filing_title: string;
-  filing_type: string;
-  jurisdictions: string[];
-  filing_date: string;
-  filing_status: string;
-  application_number?: string;
-  grant_number?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Filing } from '@/lib/blink';
 
 const FILING_STATUSES = [
   'Draft',

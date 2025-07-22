@@ -433,7 +433,7 @@ export function useFilings() {
         .from('filing_timeline')
         .select('*')
         .eq('filing_id', filingId)
-        .order('timestamp', { ascending: false })
+        .order('created_at', { ascending: false })
 
       if (error) throw error
       return data || []
@@ -449,12 +449,11 @@ export function useFilings() {
         .from('filing_timeline')
         .insert([{
           filing_id: filingId,
-          action_type: actionType,
-          action_description: description,
+          event_type: actionType,
+          event_description: description,
           user_id: user?.id,
-          category,
-          metadata,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          created_at: new Date().toISOString()
         }])
         .select()
         .single()

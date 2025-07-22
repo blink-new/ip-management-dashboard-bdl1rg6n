@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Link, Unlink, FileText, ArrowRight, ArrowDown } from 'lucide-react';
 import { useFilings } from '@/hooks/useData';
-import { Filing } from '@/lib/blink';
+import { Filing, FilingRelationship } from '@/lib/blink';
 import { toast } from 'sonner';
 
 interface FilingLinkedFilingsTabProps {
@@ -16,14 +16,7 @@ interface FilingLinkedFilingsTabProps {
   onUpdate: (updates: Partial<Filing>) => void;
 }
 
-interface FilingRelationship {
-  id: string;
-  parent_filing_id: string;
-  child_filing_id: string;
-  relationship_type: string;
-  priority_claim: boolean;
-  created_at: string;
-}
+// Using FilingRelationship type from blink.ts
 
 const RELATIONSHIP_TYPES = [
   'Continuation',
@@ -36,7 +29,7 @@ const RELATIONSHIP_TYPES = [
 ];
 
 export function FilingLinkedFilingsTab({ filing, onUpdate }: FilingLinkedFilingsTabProps) {
-  const { filings, loading, getRelationships, createRelationship, removeRelationship: deleteRelationship } = useFilings();
+  const { data: filings, loading, getRelationships, createRelationship, removeRelationship: deleteRelationship } = useFilings();
   const [relationships, setRelationships] = useState<FilingRelationship[]>([]);
   const [showAddParent, setShowAddParent] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState('');

@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertCircle, Plus, Edit, Trash2, FileText, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFilings } from '@/hooks/useData';
+import { FilingOfficeAction } from '@/lib/blink';
 
 const ACTION_TYPES = [
   'Non-Final Rejection',
@@ -65,16 +66,9 @@ const CHECKLIST_TEMPLATES = {
   ]
 };
 
-interface OfficeAction {
-  id?: string;
-  action_type: string;
-  date_received: string;
-  response_deadline: string;
-  response_filed_date?: string;
-  status: string;
+interface OfficeAction extends Omit<FilingOfficeAction, 'assigned_user_id'> {
   priority: string;
   assigned_user?: string;
-  notes?: string;
   checklist_items?: ChecklistItem[];
 }
 

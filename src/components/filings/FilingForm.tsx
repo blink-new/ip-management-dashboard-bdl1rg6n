@@ -153,7 +153,8 @@ export function FilingForm() {
         lead_inventor_id: formData.lead_inventor_id === 'none' ? null : formData.lead_inventor_id,
         assignment_to_university: 'Pending',
         assignment_status: 'Pending' as const,
-        patent_classifications: []
+        patent_classifications: [],
+        linked_disclosure_ids: formData.linked_disclosure_ids
       });
 
       // Success message and redirect
