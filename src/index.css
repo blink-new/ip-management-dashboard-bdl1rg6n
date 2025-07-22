@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - University Blue & Amber */
+    --primary: 214 88% 27%;        /* #1e40af - University Blue */
+    --primary-foreground: 0 0% 98%;
+    --accent: 43 96% 56%;          /* #f59e0b - Amber */
+    --accent-foreground: 0 0% 9%;
+    
+    /* Background System */
+    --background: 210 40% 98%;     /* #f8fafc - Light Blue Gray */
+    --foreground: 222 84% 5%;      /* #0f172a - Dark Blue */
+    
+    /* Card & Surface Colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 5%;
+    
+    /* Secondary Colors */
+    --secondary: 210 40% 96%;      /* #f1f5f9 */
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    /* Status Colors */
+    --success: 142 76% 36%;        /* #16a34a - Green */
+    --success-foreground: 0 0% 98%;
+    --warning: 43 96% 56%;         /* #f59e0b - Amber */
+    --warning-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;      /* #ef4444 - Red */
+    --destructive-foreground: 0 0% 98%;
+    
+    /* UI Elements */
+    --border: 214 32% 91%;         /* #e2e8f0 */
+    --input: 214 32% 91%;
+    --ring: 214 88% 27%;           /* Primary blue */
+    
+    /* Chart Colors */
+    --chart-1: 214 88% 27%;        /* Primary Blue */
+    --chart-2: 142 76% 36%;        /* Success Green */
+    --chart-3: 43 96% 56%;         /* Accent Amber */
+    --chart-4: 262 83% 58%;        /* Purple */
+    --chart-5: 346 87% 43%;        /* Pink */
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 84% 5%;
+    --sidebar-primary: 214 88% 27%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 214 88% 27%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 84% 5%;      /* #0f172a */
+    --foreground: 210 40% 98%;     /* #f8fafc */
+    --card: 222 47% 11%;           /* #1e293b */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;        /* Lighter blue for dark mode */
+    --primary-foreground: 222 84% 5%;
+    --secondary: 215 28% 17%;      /* #334155 */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 217 11% 65%;
+    --accent: 43 96% 56%;          /* Keep amber bright */
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 43 96% 56%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 346 87% 43%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 84% 5%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer components {
+  .status-badge-new {
+    @apply bg-blue-100 text-blue-800 border-blue-200;
+  }
+  
+  .status-badge-in-review {
+    @apply bg-amber-100 text-amber-800 border-amber-200;
+  }
+  
+  .status-badge-approved {
+    @apply bg-green-100 text-green-800 border-green-200;
+  }
+  
+  .status-badge-filed {
+    @apply bg-purple-100 text-purple-800 border-purple-200;
+  }
+  
+  .status-badge-active {
+    @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+  }
+  
+  .status-badge-expired {
+    @apply bg-red-100 text-red-800 border-red-200;
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0%; }
+  to { opacity: 100%; }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0%;
+    transform: translateY(20px);
+  }
+
+  to { 
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
